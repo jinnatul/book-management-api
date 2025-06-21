@@ -22,8 +22,14 @@ export class AuthorsRepository {
   /**
    * Get all authors.
    */
-  async findAll(): Promise<Author[]> {
-    const authors = await this.prisma.author.findMany(AuthorBaseDBArgs);
+
+  async findAll(
+    args?: Omit<Prisma.AuthorFindManyArgs, 'select'>,
+  ): Promise<Author[]> {
+    const authors = await this.prisma.author.findMany({
+      ...AuthorBaseDBArgs,
+      ...args,
+    });
     return authors.map((author) => new Author(author));
   }
 

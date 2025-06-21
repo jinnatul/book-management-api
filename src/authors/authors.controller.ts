@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { AuthorsService } from './authors.service';
 import { CreateAuthorDto, UpdateAuthorDto } from './dto';
@@ -23,8 +24,12 @@ export class AuthorsController {
   }
 
   @Get()
-  findAll(): Promise<Author[]> {
-    return this.service.findAll();
+  findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+  ): Promise<Author[]> {
+    return this.service.findAll(page, limit, search);
   }
 
   @Get(':id')
