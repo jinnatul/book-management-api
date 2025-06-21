@@ -109,4 +109,8 @@ export class BooksService {
   async remove(id: string): Promise<void> {
     await this.repository.remove(id);
   }
+
+  hasBooksByAuthor(authorId: string): Promise<boolean> {
+    return this.repository.hasBooksByAuthor(authorId);
+  }
 }

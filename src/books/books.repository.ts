@@ -95,4 +95,17 @@ export class BooksRepository {
     });
     return !existingBook || existingBook.id === id;
   }
+
+  /**
+   * Author have any books or not
+   */
+  async hasBooksByAuthor(authorId: string): Promise<boolean> {
+    return Boolean(
+      await this.prisma.book.findFirst({
+        where: {
+          authorId,
+        },
+      }),
+    );
+  }
 }
