@@ -1,26 +1,66 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaService } from '../config/prisma/prisma.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { getPagination } from '../common/utils/pagination.util';
 
 @Injectable()
 export class BooksService {
-  create(createBookDto: CreateBookDto) {
-    return 'This action adds a new book';
+  constructor(private prisma: PrismaService) {}
+
+  async create(data: CreateBookDto) {
+    const author = await this.prisma.author.findUnique({
+      where: { id: data.authorId },
+    });
+    if (!author) throw new BadRequestException('Author does not exist');
+    return this.prisma.book.create({ data });
   }
 
-  findAll() {
-    return `This action returns all books`;
+  async findAll(query: any) {
+    const { skip, limit } = getPagination(query);
+    const where = {
+      ...(query.search && {
+        OR: [
+          { title: { contains: query.search, mode: 'insensitive' } },
+          { isbn: { contains: query.search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(query.authorId && { authorId: query.authorId }),
+    };
+    return this.prisma.book.findMany({
+      where,
+      skip,
+      take: limit,
+      include: { author: true },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} book`;
+  async findOne(id: string) {
+    const book = await this.prisma.book.findUnique({
+      where: { id },
+      include: { author: true },
+    });
+    if (!book) throw new NotFoundException('Book not found');
+    return book;
   }
 
-  update(id: number, updateBookDto: UpdateBookDto) {
-    return `This action updates a #${id} book`;
+  async update(id: string, data: UpdateBookDto) {
+    try {
+      return await this.prisma.book.update({ where: { id }, data });
+    } catch {
+      throw new NotFoundException('Book not found');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} book`;
+  async remove(id: string) {
+    try {
+      await this.prisma.book.delete({ where: { id } });
+    } catch {
+      throw new NotFoundException('Book not found');
+    }
   }
 }

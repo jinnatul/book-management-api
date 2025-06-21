@@ -1,29 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../config/prisma/prisma.service';
-import { CreateAuthorDto } from './dto/create-author.dto';
-import { UpdateAuthorDto } from './dto/update-author.dto';
+import { AuthorsRepository } from './authors.repository';
+import { CreateAuthorDto, UpdateAuthorDto } from './dto';
+import { Author } from './entities';
 
 @Injectable()
 export class AuthorsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private repository: AuthorsRepository) {}
 
-  create(createAuthorDto: CreateAuthorDto) {
-    return 'This action adds a new author';
+  create(data: CreateAuthorDto): Promise<Author> {
+    return this.repository.create(data);
   }
 
-  findAll() {
-    return `This action returns all authors`;
+  findAll(): Promise<Author[]> {
+    return this.repository.findAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} author`;
+  findById(id: string): Promise<Author> {
+    return this.repository.findById(id);
   }
 
-  update(id: number, updateAuthorDto: UpdateAuthorDto) {
-    return `This action updates a #${id} author`;
+  update(id: string, data: UpdateAuthorDto): Promise<Author> {
+    return this.repository.update(id, data);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} author`;
+  async remove(id: string): Promise<void> {
+    await this.repository.remove(id);
   }
 }
