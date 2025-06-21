@@ -1,66 +1,112 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
+  ConflictException,
+  Injectable,
 } from '@nestjs/common';
-import { PrismaService } from '../config/prisma/prisma.service';
-import { CreateBookDto } from './dto/create-book.dto';
-import { UpdateBookDto } from './dto/update-book.dto';
-import { getPagination } from '../common/utils/pagination.util';
+import { Prisma } from '@prisma/client';
+
+import { BooksRepository } from './books.repository';
+import { AuthorsService } from '../authors/authors.service';
+import { CreateBookDto, UpdateBookDto } from './dto';
+import { Book } from './entities';
+import { getPagination } from 'src/common/utils/pagination.util';
 
 @Injectable()
 export class BooksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private repository: BooksRepository,
+    private authorsService: AuthorsService,
+  ) {}
 
-  async create(data: CreateBookDto) {
-    const author = await this.prisma.author.findUnique({
-      where: { id: data.authorId },
-    });
-    if (!author) throw new BadRequestException('Author does not exist');
-    return this.prisma.book.create({ data });
-  }
-
-  async findAll(query: any) {
-    const { skip, limit } = getPagination(query);
-    const where = {
-      ...(query.search && {
-        OR: [
-          { title: { contains: query.search, mode: 'insensitive' } },
-          { isbn: { contains: query.search, mode: 'insensitive' } },
-        ],
-      }),
-      ...(query.authorId && { authorId: query.authorId }),
-    };
-    return this.prisma.book.findMany({
-      where,
-      skip,
-      take: limit,
-      include: { author: true },
-    });
-  }
-
-  async findOne(id: string) {
-    const book = await this.prisma.book.findUnique({
-      where: { id },
-      include: { author: true },
-    });
-    if (!book) throw new NotFoundException('Book not found');
-    return book;
-  }
-
-  async update(id: string, data: UpdateBookDto) {
-    try {
-      return await this.prisma.book.update({ where: { id }, data });
-    } catch {
-      throw new NotFoundException('Book not found');
+  async create(data: CreateBookDto): Promise<Book> {
+    const { authorId, isbn } = data;
+    if (await this.repository.isbnExists(isbn)) {
+      throw new ConflictException(
+        'The provided ISBN is already in use. Please use a unique ISBN.',
+      );
     }
+
+    const authorExists = await this.authorsService.authorExists(authorId);
+    if (!authorExists) {
+      throw new BadRequestException(
+        'The selected author does not exist. Please choose a valid author',
+      );
+    }
+
+    return await this.repository.create(data);
   }
 
-  async remove(id: string) {
-    try {
-      await this.prisma.book.delete({ where: { id } });
-    } catch {
-      throw new NotFoundException('Book not found');
+  findAll(
+    page?: string,
+    limit?: string,
+    search?: string,
+    authorId?: string,
+  ): Promise<Book[]> {
+    const searchCondition = search
+      ? {
+          OR: [
+            {
+              title: {
+                contains: search,
+                mode: Prisma.QueryMode.insensitive,
+              },
+            },
+            {
+              isbn: {
+                contains: search,
+                mode: Prisma.QueryMode.insensitive,
+              },
+            },
+          ],
+        }
+      : undefined;
+
+    const authorCondition = authorId
+      ? {
+          authorId: authorId,
+        }
+      : undefined;
+
+    const where =
+      searchCondition && authorCondition
+        ? {
+            AND: [searchCondition, authorCondition],
+          }
+        : searchCondition || authorCondition || undefined;
+
+    const { skip, take } = getPagination(page, limit);
+    return this.repository.findAll({ skip, take, where });
+  }
+
+  findById(id: string): Promise<Book> {
+    return this.repository.findById(id);
+  }
+
+  async update(id: string, data: UpdateBookDto): Promise<Book> {
+    const { authorId, isbn } = data;
+
+    if (isbn) {
+      const isUnique = await this.repository.isISBNUniqueForUpdate(id, isbn);
+      if (!isUnique) {
+        throw new ConflictException(
+          'The provided ISBN is already in use by another book. Please use a unique ISBN.',
+        );
+      }
     }
+
+    if (authorId) {
+      const authorExists = await this.authorsService.authorExists(authorId);
+      if (!authorExists) {
+        throw new BadRequestException(
+          'The selected author does not exist. Please choose a valid author.',
+        );
+      }
+    }
+
+    return this.repository.update(id, data);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.repository.remove(id);
   }
 }

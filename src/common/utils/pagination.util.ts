@@ -1,9 +1,7 @@
-export interface PaginationOptions {
-  page?: number;
-  limit?: number;
-}
+export const getPagination = (page?: string, limit?: string) => {
+  const pageNum = page ? parseInt(page, 10) : 1;
+  const limitNum = limit ? parseInt(limit, 10) : 10;
+  const skip = (pageNum - 1) * limitNum;
 
-export function getPagination({ page = 1, limit = 10 }: PaginationOptions) {
-  const skip = (page - 1) * limit;
-  return { page, limit, skip };
-}
+  return { skip, take: limitNum };
+};

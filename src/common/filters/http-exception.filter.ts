@@ -28,7 +28,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     let error: string = 'Internal Server Error';
 
     if (this.isHttpException(exception)) {
-      // Now TS knows exception is HttpException here, no assertion needed
       status = exception.getStatus();
       const responseContent = exception.getResponse();
 
@@ -69,7 +68,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     });
   }
 
-  // Strongly typed type guard: ensures exception is HttpException
   private isHttpException(exception: unknown): exception is HttpException {
     return (
       typeof exception === 'object' &&

@@ -6,38 +6,50 @@ import {
   Patch,
   Param,
   Delete,
+  HttpCode,
   Query,
 } from '@nestjs/common';
+
 import { BooksService } from './books.service';
-import { CreateBookDto } from './dto/create-book.dto';
-import { UpdateBookDto } from './dto/update-book.dto';
+import { CreateBookDto, UpdateBookDto } from './dto';
+import { Book } from './entities';
 
 @Controller('books')
 export class BooksController {
   constructor(private readonly service: BooksService) {}
 
   @Post()
-  create(@Body() dto: CreateBookDto) {
-    return this.service.create(dto);
+  @HttpCode(201)
+  create(@Body() createBookDto: CreateBookDto): Promise<Book> {
+    return this.service.create(createBookDto);
   }
 
   @Get()
-  findAll(@Query() query: any) {
-    return this.service.findAll(query);
+  findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('authorId') authorId?: string,
+  ): Promise<Book[]> {
+    return this.service.findAll(page, limit, search, authorId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+  findById(@Param('id') id: string): Promise<Book> {
+    return this.service.findById(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateBookDto) {
-    return this.service.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() updateBookDto: UpdateBookDto,
+  ): Promise<Book> {
+    return this.service.update(id, updateBookDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @HttpCode(204)
+  remove(@Param('id') id: string): Promise<void> {
     return this.service.remove(id);
   }
 }

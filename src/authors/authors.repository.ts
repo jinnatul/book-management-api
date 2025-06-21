@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+
 import { PrismaService } from '../config/prisma/prisma.service';
 import { Author } from './entities';
 import { AuthorBaseDBArgs } from './db-args';
@@ -65,5 +66,16 @@ export class AuthorsRepository {
   async remove(id: string): Promise<void> {
     await this.findById(id);
     await this.prisma.author.delete({ where: { id } });
+  }
+
+  /**
+   * Author exists or not.
+   */
+  async authorExists(id: string): Promise<boolean> {
+    return Boolean(
+      await this.prisma.author.findUnique({
+        where: { id },
+      }),
+    );
   }
 }

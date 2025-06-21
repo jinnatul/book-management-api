@@ -1,9 +1,11 @@
+import { Transform } from 'class-transformer';
 import {
+  IsDate,
+  isDateString,
+  IsISBN,
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsDateString,
-  IsISBN,
   IsUUID,
 } from 'class-validator';
 
@@ -17,8 +19,11 @@ export class CreateBookDto {
   isbn: string;
 
   @IsOptional()
-  @IsDateString()
-  publishedDate?: string;
+  @IsDate()
+  @Transform(({ value }) =>
+    isDateString(value) ? new Date(value as string) : (value as never),
+  )
+  publishedDate?: Date | null;
 
   @IsOptional()
   @IsString()

@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+
 import { AuthorsRepository } from './authors.repository';
 import { CreateAuthorDto, UpdateAuthorDto } from './dto';
 import { Author } from './entities';
+import { getPagination } from 'src/common/utils/pagination.util';
 
 @Injectable()
 export class AuthorsService {
@@ -13,10 +15,6 @@ export class AuthorsService {
   }
 
   findAll(page?: string, limit?: string, search?: string): Promise<Author[]> {
-    const pageNum = page ? parseInt(page, 10) : 1;
-    const limitNum = limit ? parseInt(limit, 10) : 10;
-    const skip = (pageNum - 1) * limitNum;
-
     const where = search
       ? {
           OR: [
@@ -36,7 +34,8 @@ export class AuthorsService {
         }
       : undefined;
 
-    return this.repository.findAll({ skip, take: limitNum, where });
+    const { skip, take } = getPagination(page, limit);
+    return this.repository.findAll({ skip, take, where });
   }
 
   findById(id: string): Promise<Author> {
@@ -49,5 +48,9 @@ export class AuthorsService {
 
   async remove(id: string): Promise<void> {
     await this.repository.remove(id);
+  }
+
+  authorExists(id: string): Promise<boolean> {
+    return this.repository.authorExists(id);
   }
 }
