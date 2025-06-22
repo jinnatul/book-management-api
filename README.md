@@ -34,9 +34,21 @@ A RESTful API built with NestJS and Prisma to manage authors and books. Supports
 
 * Start the app
 - npm run start:dev
+
+* API Dcos
+- http://localhost:5000/docs
 ```
 ## 🧩 API Endpoints
-- http://localhost:5000/docs
+![Docs](https://github.com/user-attachments/assets/d04273b1-eb32-46cc-aa34-5b68d197fc2b)
+![1](https://github.com/user-attachments/assets/6eca48c9-082a-4575-8f0e-19155ef137ae)
+![2](https://github.com/user-attachments/assets/db92bea3-8d5f-4744-97b1-636137526743)
+![3](https://github.com/user-attachments/assets/ae2b0411-361c-42dd-830b-81242a1fe78d)
+![4](https://github.com/user-attachments/assets/f9bde250-5035-449a-87e6-5abbd4ef0177)
+![5](https://github.com/user-attachments/assets/d9f1ec64-3af1-4072-b63a-8f46ed198ba3)
+![6](https://github.com/user-attachments/assets/33de4a77-385b-4231-b139-58382e84a7f9)
+![7](https://github.com/user-attachments/assets/67aea6c7-62b0-4773-a8bf-afc54591d30e)
+![8](https://github.com/user-attachments/assets/5dddffc9-9c08-4a5a-bf67-ce1861216cb5)
+![9](https://github.com/user-attachments/assets/b7433797-a9e3-4d7e-87e9-f5c06b7eb50c)
 
 ## ✅ Testing
 
