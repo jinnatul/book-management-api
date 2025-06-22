@@ -10,7 +10,7 @@ import { Prisma } from '@prisma/client';
 import { AuthorsRepository } from './authors.repository';
 import { CreateAuthorDto, UpdateAuthorDto } from './dto';
 import { Author } from './entities';
-import { getPagination } from 'src/common/utils/pagination.util';
+import { getPagination } from '../common/utils/pagination.util';
 import { BooksService } from '../books/books.service';
 
 @Injectable()

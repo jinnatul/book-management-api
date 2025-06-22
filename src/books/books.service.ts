@@ -10,7 +10,7 @@ import { BooksRepository } from './books.repository';
 import { AuthorsService } from '../authors/authors.service';
 import { CreateBookDto, UpdateBookDto } from './dto';
 import { Book } from './entities';
-import { getPagination } from 'src/common/utils/pagination.util';
+import { getPagination } from '../common/utils/pagination.util';
 
 @Injectable()
 export class BooksService {
